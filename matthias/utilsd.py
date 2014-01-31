@@ -13,12 +13,31 @@ import scipy.ndimage
 import pyximport
 pyximport.install()
 import dmask
+import io
 
 
 __all__ = ['proj3',
         'light_table',
-        'make_posmap'
+        'make_posmap',
+        'projxy'
         ]
+
+def proj3b(im, extent, **kwargs):
+    return proj3(im,extent.xm,extent.ym,extent.zm, **kwargs)
+
+
+def projxy(ax, arr,  cmap='gray', xm=None, ym=None, alpha=1):
+    assert(xm is not None)
+    assert(ym is not None)
+
+    if not ax: 
+        fig, ax = plt.subplots()
+
+    ax.imshow(sum((arr), axis=0), cmap=cmap, extent=[0,xm,0,ym], axes='equal' , origin='lower',alpha=alpha)
+    ax.set_xlabel(r'x \mu m')
+    ax.set_ylabel(u'y µm')
+    return ax
+
 
 
 def proj3(arr, xm, ym, zm, cmap=None, circles=None, axes=None, alpha=1):
@@ -35,14 +54,9 @@ def proj3(arr, xm, ym, zm, cmap=None, circles=None, axes=None, alpha=1):
     #ax3.set_ylim(-ym,ym*2)
     else:
         ax1,ax2,ax3 = axes
-    
+   
+    projxy(ax3, arr, cmap=cmap, xm=xm,ym=ym, alpha=alpha)
 
-    ax3.imshow(sum((arr), axis=0), cmap=cmap, extent=[0,xm,0,ym], axes='equal' , origin='lower',alpha=alpha)
-    
-    ax3.set_xlabel(r'x \mu m')
-    ax3.set_ylabel(u'y µm')
-
-    
     ax2.imshow(sum((arr), axis=1), cmap=cmap, extent=[0,xm,0,zm], axes='equal', origin='lower',alpha=alpha)
     ax2.set_xlabel(u'x µm')
     ax2.set_ylabel(u'z µm')
@@ -174,3 +188,21 @@ def normalize_intens(raw_image):
     nprofiles = nprofiles.astype('float32')
     nprofiles = nprofiles/nprofiles.max()
     return nprofiles
+
+def get_amaris_info(infon):
+    with io.open(infon) as f:
+        for l in  f.readlines():
+            if l.startswith('x :'):
+                print l,
+#            elif l.startswith('y :'):
+#                print l,
+#            elif l.startswith('Z :'):
+#                print l
+    
+            elif l.strip().startswith('Repeat Z'):
+#                print l.strip()
+                zzm= abs(float(l.strip()[11:17])),
+            else :
+                pass
+                #print l,
+    return {'zzm':zzm[0]}
