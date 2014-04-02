@@ -23,7 +23,6 @@ def _cercle_intersect(d, R, r):
     """
     if R+r < d : 
         return (None, None)
-    print('d, R, r :',d, R, r)
     x = (d**2+R**2-r**2)/(d*2)
     y = sqrt(R**2-x**2)
     return (x,y)
@@ -31,8 +30,6 @@ def _cercle_intersect(d, R, r):
 def cercle_intersect(xa, ya, ra, xb, yb, rb):
     uab = array([xb-xa, yb-ya])
     dcircle = sqrt(sum(uab**2))
-    print('dcircle :',dcircle)
-    print('uab :',uab)
     locx, locy = _cercle_intersect(dcircle, ra, rb)
     uab = uab/ dcircle
 
@@ -40,8 +37,22 @@ def cercle_intersect(xa, ya, ra, xb, yb, rb):
     Hy = ya+locx*uab[1] + locy*uab[0]
     Hxb = xa+locx*uab[0] + locy*uab[1]
     Hyb = ya+locx*uab[1] - locy*uab[0]
-    print('Hx, Hy :',Hx, Hy)
     return ((Hx,Hy),(Hxb,Hyb))
+
+def draw_tangeants_inter(ax, x,y,r, X, Y, R,l=10, dirs=(False,False),c='g'):
+    (Ap,Bp), (Cp,Dp) = cercle_intersect(x,y,r,X,Y,R)
+    ax.scatter(Ap, Bp)
+    ax.scatter(Cp, Dp)
+    ax.scatter(X, Y)
+    ax.scatter(x, y)
+
+    tx1, ty1 = tan_seg(X,Y,Ap,Bp, length=l, reverse=dirs[0])
+    ax.plot(tx1,ty1,c)
+
+
+    tx, ty = tan_seg(X,Y,Cp,Dp, length=l, reverse=dirs[1])
+    ax.plot(tx,ty,c)
+
 
 def draw_tangeants(ax, x,y,r, X, Y, R,l=10, dirs=[]):
     (Ap,Bp), (Cp,Dp) = cercle_intersect(x,y,r,X,Y,R)
@@ -51,20 +62,20 @@ def draw_tangeants(ax, x,y,r, X, Y, R,l=10, dirs=[]):
     ax.scatter(x, y)
 
     tx, ty = tan_seg(x,y,Ap,Bp,length=l)
-    ax.plot(tx,ty)
+    ax.plot(tx,ty,'r')
     tx1, ty1 = tan_seg(X,Y,Ap,Bp, length=l, reverse=True)
-    ax.plot(tx1,ty1)
+    ax.plot(tx1,ty1,'r')
     bisx, bisy = (tx+tx1)/2, (ty+ty1)/2
-    ax.plot(bisx,bisy)
+    ax.plot(bisx,bisy,'b')
 
 
     tx, ty = tan_seg(X,Y,Cp,Dp, length=l, reverse=False)
-    ax.plot(tx,ty)
+    ax.plot(tx,ty,'r')
 
     tx1, ty1 = tan_seg(x,y,Cp,Dp, length=l, reverse=True)
-    ax.plot(tx1,ty1)
+    ax.plot(tx1,ty1,'r')
     bisx, bisy = (tx+tx1)/2, (ty+ty1)/2
-    ax.plot(bisx,bisy)
+    ax.plot(bisx,bisy,'b')
 
 def tan_seg(cx, cy, px, py,length=3, reverse=False):
     """return a secment tangean at circle on point"""
@@ -79,7 +90,7 @@ def tan_seg(cx, cy, px, py,length=3, reverse=False):
     rpy = py+sign*length*ucp[0]
     return np.array((px, rpx)),np.array((py, rpy))
 
-def drawinterface(ax, z, spheres):
+def drawinterface(ax, z, spheres, tanlen=15):
     
     Cg = Sphere(  *spheres[0:4])
     Cp = Sphere(  *spheres[4:8])
@@ -149,7 +160,7 @@ def drawinterface(ax, z, spheres):
             ax.add_patch(circ)
             ax.scatter((x),(y), c=c)
 
-        draw_tangeants(ax, *tanparam[0:6], l=5)
+        draw_tangeants(ax, *tanparam[0:6], l=tanlen)
         return ax
     z= z if z is not None else (Cp.z+Cg.z)/2
     ax= pcirc(ax, z ,Cp,Cg,Ci)

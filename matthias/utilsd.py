@@ -29,14 +29,14 @@ def proj3b(im, extent, **kwargs):
 def projxy(ax, arr,  cmap='gray', xm=None, ym=None, alpha=1):
     assert(xm is not None)
     assert(ym is not None)
-
+    fig = None
     if not ax: 
         fig, ax = plt.subplots()
 
     ax.imshow(sum((arr), axis=0), cmap=cmap, extent=[0,xm,0,ym], axes='equal' , origin='lower',alpha=alpha)
     ax.set_xlabel(r'x \mu m')
     ax.set_ylabel(u'y µm')
-    return ax
+    return fig,ax
 
 
 
